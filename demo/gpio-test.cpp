@@ -1,30 +1,25 @@
-#if 0
-sudo apt update
-sudo apt install gpiod libgpiod-dev libgpiod-doc g++
+// https://docs.sunfounder.com/projects/raphael-kit/en/latest/c_pi5/play_with_c.html
+// https://pinout.xyz/pinout/wiringpi
 
-
-alternative
-https://docs.sunfounder.com/projects/raphael-kit/en/latest/c_pi5/play_with_c.html
-#endif
-
-#include <gpiod.hpp>
-#include <iostream>
-#include <thread>
-#include <chrono>
+#include <wiringPi.h>
+#include <stdio.h>
 
 int main()
 {
-    const std::string GPIO_CHIP_NAME = "gpiochip0";
-    const unsigned int GPIO_PIN = 17;
-
-    try
+    if (wiringPiSetup() == -1)
     {
-        ::gpiod::chip chip(GPIO_CHIP_NAME);
-        ::gpiod::line_settings settings = chip.get_line_info(GPIO_PIN);
-    } catch (const std::exception& e) {
-        std::cerr << "Exception encountered: " << e.what() << "\n";
+        perror("wiringPiSetup FAILED");
         return 1;
     }
+    const int WIRING_PI_PIN = 15;
 
+    pinMode(WIRING_PI_PIN, OUTPUT);
+    while (true)
+    {
+        digitalWrite(WIRING_PI_PIN, LOW);
+        delay(500);
+        digitalWrite(WIRING_PI_PIN, HIGH);
+        delay(500);
+    }
     return 0;
 }
