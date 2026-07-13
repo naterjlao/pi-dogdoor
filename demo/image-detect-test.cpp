@@ -19,8 +19,8 @@ int main() {
 
     // 2. Load the Pre-trained Model (MobileNet-SSD)
     // Download prototxt and caffemodel files before running
-    std::string protoTxt = "MobileNetSSD_deploy.prototxt";
-    std::string caffeModel = "MobileNetSSD_deploy.caffemodel";
+    std::string protoTxt = "../dataset/MobileNetSSD_deploy.prototxt";
+    std::string caffeModel = "../dataset/MobileNetSSD_deploy.caffemodel";
     
     cv::dnn::Net net = cv::dnn::readNetFromCaffe(protoTxt, caffeModel);
     
