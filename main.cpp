@@ -76,6 +76,7 @@ public:
             if (DETECTED_OBJECT_CONFIDENCE > confidence)
             {
                 const size_t DETECTED_OBJECT_INDEX = static_cast<size_t>(detectionMat.at<float>(i, 1));
+                /** Return true if any label in @p lables have been detected with confidence. */
                 result = result ||
                          (std::count(
                               labels.begin(),
@@ -98,8 +99,7 @@ int main()
     assert(wiringPiSetup() != -1);
     digitalWrite(WIRING_PI_PIN_RF_POWER, LOW);
 
-    /** @todo person -> dog */
-    const std::vector<DATASET_OBJECT_LABEL> TARGET_OBJECT_LABELS = {DATASET_OBJECT_LABEL::person};
+    const std::vector<DATASET_OBJECT_LABEL> TARGET_OBJECT_LABELS = {DATASET_OBJECT_LABEL::dog};
     CameraDetector camera_a(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 0);
     CameraDetector camera_b(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 4);
 
