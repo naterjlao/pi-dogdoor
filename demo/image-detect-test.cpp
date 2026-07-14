@@ -34,8 +34,6 @@ int main() {
                                 "diningtable", "dog", "horse", "motorbike", "person",
                                 "pottedplant", "sheep", "sofa", "train", "tvmonitor"};
 
-    // const char* classNames[] = {"dog"};
-
     cv::Mat frame;
     std::cout << "Starting detection. Press 'q' to exit..." << std::endl;
 
