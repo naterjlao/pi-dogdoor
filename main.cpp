@@ -98,6 +98,7 @@ int main()
     assert(wiringPiSetup() != -1);
     digitalWrite(WIRING_PI_PIN_RF_POWER, LOW);
 
+    /** @todo person -> dog */
     const std::vector<DATASET_OBJECT_LABEL> TARGET_OBJECT_LABELS = {DATASET_OBJECT_LABEL::person};
     CameraDetector camera_a(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 0);
     CameraDetector camera_b(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 4);
