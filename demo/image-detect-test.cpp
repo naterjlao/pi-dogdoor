@@ -7,6 +7,7 @@
 
 int main() {
     // 1. Initialize the USB Camera (Index 0 is default for first USB cam)
+    // 0 or 4
     cv::VideoCapture cap(0);
     if (!cap.isOpened()) {
         std::cerr << "Error: Could not open the USB camera." << std::endl;
@@ -32,8 +33,6 @@ int main() {
                                 "bottle", "bus", "car", "cat", "chair", "cow",
                                 "diningtable", "dog", "horse", "motorbike", "person",
                                 "pottedplant", "sheep", "sofa", "train", "tvmonitor"};
-
-    // const char* classNames[] = {"dog"};
 
     cv::Mat frame;
     std::cout << "Starting detection. Press 'q' to exit..." << std::endl;
