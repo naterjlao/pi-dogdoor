@@ -1,3 +1,4 @@
+/* System Libraries */
 #include <thread>
 #include <chrono>
 #include <algorithm>
@@ -10,11 +11,11 @@
 #include <opencv2/dnn.hpp>
 
 /* Datasets and Settings */
-const auto FRAME_DELAY = std::chrono::milliseconds(50);
-const auto ACTIVE_LATCH = std::chrono::seconds(2);
-const int WIRING_PI_PIN_RF_POWER = 15;
-const std::string DATASET_PROTOTXT = "dataset/MobileNetSSD_deploy.prototxt";
-const std::string DATASET_CAFFEMODEL = "dataset/MobileNetSSD_deploy.caffemodel";
+const auto FRAME_DELAY                  = std::chrono::milliseconds(50);            /** Frame delay between camera image captures and detection. */
+const auto ACTIVE_LATCH                 = std::chrono::seconds(2);                  /** The amount of time to latch the output control pin during detection event. */
+const int WIRING_PI_PIN_RF_POWER        = 15;                                       /** Raspberry Pi 5 Wiring PI GPIO Pin. */
+const std::string DATASET_PROTOTXT      = "dataset/MobileNetSSD_deploy.prototxt";   /** Dataset Proto Txt Model */
+const std::string DATASET_CAFFEMODEL    = "dataset/MobileNetSSD_deploy.caffemodel"; /** Dataset Caffe Model */
 enum class DATASET_OBJECT_LABEL : size_t
 {
     background,
@@ -99,6 +100,7 @@ int main()
     assert(wiringPiSetup() != -1);
     digitalWrite(WIRING_PI_PIN_RF_POWER, LOW);
 
+    /** Defines the target objects for detection. @note This must correspond to the indices in the datasets. */
     const std::vector<DATASET_OBJECT_LABEL> TARGET_OBJECT_LABELS = {DATASET_OBJECT_LABEL::dog};
     CameraDetector camera_a(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 0);
     CameraDetector camera_b(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 4);
