@@ -6,6 +6,7 @@ Image detection dog door driver for RPi.
     - https://github.com/Qengineering/Install-OpenCV-Raspberry-Pi-32-bits/tree/main
     - Use the latest version
     - Remove `libatlas-base-dev`. No longer supported.
+    - `v4l2-ctl --list-devices`
 - MobileNetSSD Dataset
     - https://github.com/PINTO0309/MobileNet-SSD-RealSense/tree/master/caffemodel/MobileNetSSD
     - Make sure installed files are binary.

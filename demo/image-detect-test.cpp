@@ -7,6 +7,7 @@
 
 int main() {
     // 1. Initialize the USB Camera (Index 0 is default for first USB cam)
+    // 0 or 4
     cv::VideoCapture cap(0);
     if (!cap.isOpened()) {
         std::cerr << "Error: Could not open the USB camera." << std::endl;
