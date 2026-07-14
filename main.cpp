@@ -11,7 +11,8 @@
 
 /* Datasets and Settings */
 const auto FRAME_DELAY = std::chrono::milliseconds(50);
-const auto ACTIVE_LATCH = std::chrono::seconds(3);
+const auto ACTIVE_LATCH = std::chrono::seconds(2);
+const int WIRING_PI_PIN_RF_POWER = 15;
 const std::string DATASET_PROTOTXT = "dataset/MobileNetSSD_deploy.prototxt";
 const std::string DATASET_CAFFEMODEL = "dataset/MobileNetSSD_deploy.caffemodel";
 enum class DATASET_OBJECT_LABEL : size_t
@@ -55,6 +56,8 @@ public:
 
     bool detect(const std::vector<DATASET_OBJECT_LABEL> &labels, const int confidence = 0.5)
     {
+        /** @todo @p labels could be optimized to a hashmap. */
+
         /* Camera Frame Capture*/
         cap >> frame;
         assert(!frame.empty());
@@ -92,18 +95,29 @@ private:
 
 int main()
 {
-    /** @todo this could be optimized to a hashmap for detect(). */
+    assert(wiringPiSetup() != -1);
+    digitalWrite(WIRING_PI_PIN_RF_POWER, LOW);
+
     const std::vector<DATASET_OBJECT_LABEL> TARGET_OBJECT_LABELS = {DATASET_OBJECT_LABEL::person};
     CameraDetector camera_a(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 0);
     CameraDetector camera_b(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 4);
 
-    size_t detection_counter = 0;
+    auto latch = std::chrono::milliseconds(0);
     while (true)
     {
         if (camera_a.detect(TARGET_OBJECT_LABELS) || camera_b.detect(TARGET_OBJECT_LABELS))
-            std::cout << "detected " << detection_counter++ << std::endl;
+        {
+            digitalWrite(WIRING_PI_PIN_RF_POWER, HIGH);
+            latch = ACTIVE_LATCH;
+        }
 
         std::this_thread::sleep_for(FRAME_DELAY);
+        if (latch > std::chrono::milliseconds(0))
+        {
+            latch = latch - FRAME_DELAY;
+            if (latch <= std::chrono::milliseconds(0))
+                digitalWrite(WIRING_PI_PIN_RF_POWER, LOW);
+        }
     }
 
     return 0;
