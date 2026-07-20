@@ -15,8 +15,8 @@ const auto FRAME_DELAY                  = std::chrono::milliseconds(50);        
 const auto TRIGGER_TIME                 = std::chrono::milliseconds(200);           /** The amount of time for a target to be in frame for activation. */ 
 const auto ACTIVE_LATCH                 = std::chrono::milliseconds(250);           /** The amount of time to latch the output control pin during detection event. */
 const int WIRING_PI_PIN_RF_POWER        = 0;                                        /** Raspberry Pi 5 Wiring PI GPIO Pin. */
-const std::string DATASET_PROTOTXT      = "dataset/MobileNetSSD_deploy.prototxt";   /** Dataset Proto Txt Model */
-const std::string DATASET_CAFFEMODEL    = "dataset/MobileNetSSD_deploy.caffemodel"; /** Dataset Caffe Model */
+const std::string DATASET_PROTOTXT      = "/home/nlao/pi-dogdoor/dataset/MobileNetSSD_deploy.prototxt";   /** Dataset Proto Txt Model */
+const std::string DATASET_CAFFEMODEL    = "/home/nlao/pi-dogdoor/dataset/MobileNetSSD_deploy.caffemodel"; /** Dataset Caffe Model */
 enum class DATASET_OBJECT_LABEL : size_t
 {
     background,
