@@ -12,7 +12,7 @@
 
 /* Datasets and Settings */
 const auto FRAME_DELAY                  = std::chrono::milliseconds(50);            /** Frame delay between camera image captures and detection. */
-const auto TRIGGER_TIME                 = std::chrono::milliseconds(200);           /** The amount of time for a target to be in frame for activation. */ 
+const auto TRIGGER_TIME                 = std::chrono::milliseconds(1);           /** The amount of time for a target to be in frame for activation. */ 
 const auto ACTIVE_LATCH                 = std::chrono::milliseconds(250);           /** The amount of time to latch the output control pin during detection event. */
 const int WIRING_PI_PIN_RF_POWER        = 0;                                        /** Raspberry Pi 5 Wiring PI GPIO Pin. */
 const std::string DATASET_PROTOTXT      = "/home/nlao/pi-dogdoor/dataset/MobileNetSSD_deploy.prototxt";   /** Dataset Proto Txt Model */
@@ -119,6 +119,7 @@ int main()
     std::cout << "STARTING PI DOG DOOR" << std::endl;
     while (true)
     {
+	    std::cout << "CAPTURING: " << "trigger=" << trigger.count() << " " << "latch=" << latch.count() << std::endl;
         if (latch > std::chrono::milliseconds(0))
         {
             latch = latch - FRAME_DELAY;
