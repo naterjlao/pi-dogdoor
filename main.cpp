@@ -12,8 +12,9 @@
 
 /* Datasets and Settings */
 const auto FRAME_DELAY                  = std::chrono::milliseconds(50);            /** Frame delay between camera image captures and detection. */
-const auto ACTIVE_LATCH                 = std::chrono::seconds(2);                  /** The amount of time to latch the output control pin during detection event. */
-const int WIRING_PI_PIN_RF_POWER        = 15;                                       /** Raspberry Pi 5 Wiring PI GPIO Pin. */
+const auto TRIGGER_TIME                 = std::chrono::milliseconds(1000);          /** The amount of time for a target to be in frame for activation. */ 
+const auto ACTIVE_LATCH                 = std::chrono::milliseconds(250);           /** The amount of time to latch the output control pin during detection event. */
+const int WIRING_PI_PIN_RF_POWER        = 0;                                        /** Raspberry Pi 5 Wiring PI GPIO Pin. */
 const std::string DATASET_PROTOTXT      = "dataset/MobileNetSSD_deploy.prototxt";   /** Dataset Proto Txt Model */
 const std::string DATASET_CAFFEMODEL    = "dataset/MobileNetSSD_deploy.caffemodel"; /** Dataset Caffe Model */
 enum class DATASET_OBJECT_LABEL : size_t
@@ -47,9 +48,13 @@ public:
     CameraDetector(
         const std::string &prototxt,
         const std::string &caffemodel,
-        int camera_id)
+        int camera_id,
+        bool rotate = false,
+        cv::RotateFlags rotation = cv::RotateFlags::ROTATE_90_CLOCKWISE)
         : net(cv::dnn::readNetFromCaffe(prototxt, caffemodel)),
-          cap(camera_id)
+          cap(camera_id),
+          rotate(rotate),
+          rotation(rotation)
     {
         net.setPreferableBackend(cv::dnn::DNN_BACKEND_OPENCV);
         net.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
@@ -60,8 +65,9 @@ public:
         /** @todo @p labels could be optimized to a hashmap. */
 
         /* Camera Frame Capture*/
-        cap >> frame;
-        assert(!frame.empty());
+        cap >> raw;
+        assert(!raw.empty());
+        if (this->rotate) cv::rotate(raw, frame, this->rotation);
 
         /* Run Detection Algorithm */
         cv::Mat blob = cv::dnn::blobFromImage(frame, 0.007843, cv::Size(300, 300), cv::Scalar(127.5, 127.5, 127.5), false);
@@ -92,7 +98,10 @@ public:
 private:
     cv::dnn::Net net;
     cv::VideoCapture cap;
+    cv::Mat raw;
     cv::Mat frame;
+    const bool rotate;
+    const cv::RotateFlags rotation;
 };
 
 int main()
@@ -102,9 +111,10 @@ int main()
 
     /** Defines the target objects for detection. @note This must correspond to the indices in the datasets. */
     const std::vector<DATASET_OBJECT_LABEL> TARGET_OBJECT_LABELS = {DATASET_OBJECT_LABEL::dog};
-    CameraDetector camera_a(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 0);
-    CameraDetector camera_b(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 4);
+    CameraDetector camera_a(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 0, true, cv::RotateFlags::ROTATE_90_COUNTERCLOCKWISE);
+    CameraDetector camera_b(DATASET_PROTOTXT, DATASET_CAFFEMODEL, 4, true, cv::RotateFlags::ROTATE_90_CLOCKWISE);
 
+    auto trigger = std::chrono::milliseconds(0);
     auto latch = std::chrono::milliseconds(0);
     while (true)
     {
