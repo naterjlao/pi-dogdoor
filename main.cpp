@@ -12,7 +12,7 @@
 
 /* Datasets and Settings */
 const auto FRAME_DELAY                  = std::chrono::milliseconds(50);            /** Frame delay between camera image captures and detection. */
-const auto TRIGGER_TIME                 = std::chrono::milliseconds(1000);          /** The amount of time for a target to be in frame for activation. */ 
+const auto TRIGGER_TIME                 = std::chrono::milliseconds(200);           /** The amount of time for a target to be in frame for activation. */ 
 const auto ACTIVE_LATCH                 = std::chrono::milliseconds(250);           /** The amount of time to latch the output control pin during detection event. */
 const int WIRING_PI_PIN_RF_POWER        = 0;                                        /** Raspberry Pi 5 Wiring PI GPIO Pin. */
 const std::string DATASET_PROTOTXT      = "dataset/MobileNetSSD_deploy.prototxt";   /** Dataset Proto Txt Model */
@@ -116,21 +116,33 @@ int main()
 
     auto trigger = std::chrono::milliseconds(0);
     auto latch = std::chrono::milliseconds(0);
+    std::cout << "STARTING PI DOG DOOR" << std::endl;
     while (true)
     {
-        if (camera_a.detect(TARGET_OBJECT_LABELS) || camera_b.detect(TARGET_OBJECT_LABELS))
-        {
-            digitalWrite(WIRING_PI_PIN_RF_POWER, HIGH);
-            latch = ACTIVE_LATCH;
-        }
-
-        std::this_thread::sleep_for(FRAME_DELAY);
         if (latch > std::chrono::milliseconds(0))
         {
             latch = latch - FRAME_DELAY;
             if (latch <= std::chrono::milliseconds(0))
+            {
+                std::cout << "CLOSING" << std::endl;
                 digitalWrite(WIRING_PI_PIN_RF_POWER, LOW);
+		latch = std::chrono::milliseconds(0);
+            }
+	}
+	else if (trigger < TRIGGER_TIME)
+	{
+            trigger = (camera_a.detect(TARGET_OBJECT_LABELS) || camera_b.detect(TARGET_OBJECT_LABELS))
+                ? trigger + FRAME_DELAY
+		: std::chrono::milliseconds(0);
         }
+	else
+	{
+	    std::cout << "OPENING" << std::endl;
+	    digitalWrite(WIRING_PI_PIN_RF_POWER, HIGH);
+	    trigger = std::chrono::milliseconds(0);
+	    latch = ACTIVE_LATCH;
+	}
+        std::this_thread::sleep_for(FRAME_DELAY);
     }
 
     return 0;
