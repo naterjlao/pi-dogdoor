@@ -1,6 +1,34 @@
 # pi-dogdoor
 Image detection dog door driver for RPi.
 
+# Rapsberry Pi Daemon Setup
+
+## Systemd Unit File
+`/etc/systemd/system/pi-dogdoor.service` 
+```
+[Unit]
+Description=Pi Dog Door Driver
+After=network.target
+
+[Service]
+Type=simple
+User=nlao
+WorkingDirectory=/home/nlao/pi-dogdoor
+ExecStart=/home/nlao/pi-dogdoor/build/pi-dogdoor-driver
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## Commands
+sudo systemctl daemon-reload
+sudo systemctl enable mydaemon.service
+sudo systemctl start mydaemon.service
+sudo systemctl status mydaemon.service
+sudo journalctl -u mydaemon.service -f
+
 # Rapsberry Pi Setup Resources
 - OpenCV Install 
     - https://github.com/Qengineering/Install-OpenCV-Raspberry-Pi-32-bits/tree/main
