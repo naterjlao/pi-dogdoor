@@ -8,7 +8,7 @@
 int main() {
     // 1. Initialize the USB Camera (Index 0 is default for first USB cam)
     // 0 or 4
-    cv::VideoCapture cap(0);
+    cv::VideoCapture cap(4);
     if (!cap.isOpened()) {
         std::cerr << "Error: Could not open the USB camera." << std::endl;
         return -1;
@@ -34,12 +34,14 @@ int main() {
                                 "diningtable", "dog", "horse", "motorbike", "person",
                                 "pottedplant", "sheep", "sofa", "train", "tvmonitor"};
 
+    cv::Mat raw;
     cv::Mat frame;
     std::cout << "Starting detection. Press 'q' to exit..." << std::endl;
 
     while (true) {
-        cap >> frame; // Capture live frame
-        if (frame.empty()) break;
+        cap >> raw; // Capture live frame
+        if (raw.empty()) break;
+        else cv::rotate(raw, frame, cv::ROTATE_90_CLOCKWISE);
 
         // 3. Preprocess frame for the neural network (Resize to 300x300, scale pixels)
         cv::Mat blob = cv::dnn::blobFromImage(frame, 0.007843, cv::Size(300, 300), cv::Scalar(127.5, 127.5, 127.5), false);
