@@ -148,6 +148,7 @@ int main(int argc, char** argv)
         perror("wiringPiSetup() failed");
         return 1;	
     }
+    pinMode(WIRING_PI_PIN_RF_POWER, OUTPUT);
     digitalWrite(WIRING_PI_PIN_RF_POWER, LOW);
 
     /** Defines the target objects for detection. @note This must correspond to the indices in the datasets. */
