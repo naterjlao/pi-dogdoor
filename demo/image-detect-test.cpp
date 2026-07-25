@@ -5,10 +5,26 @@
 #include <opencv2/dnn.hpp>
 #include <iostream>
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    if (argc != 2)
+    {
+        std::cerr << "Error: Invalid number of arguments. Expecting 0 (indoor) or 1 (outdoor)." << std::endl;
+        return -1;
+    }
+
+    char *endptr = NULL;
+    const long CAMERA_SELECTION = strtol(argv[1], &endptr, 10);
+    if (endptr == argv[1])
+    {
+        std::cerr << "Error: Invalid argument " << argv[1] << ". Expecting 0 (indoor) or 1 (outdoor)." << std::endl;
+        return -1;
+    }
+
+
     // 1. Initialize the USB Camera (Index 0 is default for first USB cam)
     // 0 or 4
-    cv::VideoCapture cap(4);
+    cv::VideoCapture cap((CAMERA_SELECTION > 0) ? 4 : 0);
     if (!cap.isOpened()) {
         std::cerr << "Error: Could not open the USB camera." << std::endl;
         return -1;
@@ -41,7 +57,7 @@ int main() {
     while (true) {
         cap >> raw; // Capture live frame
         if (raw.empty()) break;
-        else cv::rotate(raw, frame, cv::ROTATE_90_CLOCKWISE);
+        else cv::rotate(raw, frame, (CAMERA_SELECTION > 0) ? cv::ROTATE_90_CLOCKWISE : cv::ROTATE_90_COUNTERCLOCKWISE);
 
         // 3. Preprocess frame for the neural network (Resize to 300x300, scale pixels)
         cv::Mat blob = cv::dnn::blobFromImage(frame, 0.007843, cv::Size(300, 300), cv::Scalar(127.5, 127.5, 127.5), false);
