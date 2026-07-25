@@ -14,12 +14,6 @@ int main()
     const int WIRING_PI_PIN = 0;
 
     pinMode(WIRING_PI_PIN, OUTPUT);
-    while (true)
-    {
-        digitalWrite(WIRING_PI_PIN, LOW);
-        delay(500);
-        digitalWrite(WIRING_PI_PIN, HIGH);
-        delay(500);
-    }
+    digitalWrite(WIRING_PI_PIN, LOW);
     return 0;
 }

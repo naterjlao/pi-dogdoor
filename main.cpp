@@ -1,4 +1,5 @@
 /* System Libraries */
+#include <cstdlib>
 #include <thread>
 #include <chrono>
 #include <algorithm>
@@ -11,9 +12,6 @@
 #include <opencv2/dnn.hpp>
 
 /* Datasets and Settings */
-const auto FRAME_DELAY                  = std::chrono::milliseconds(50);            /** Frame delay between camera image captures and detection. */
-const auto TRIGGER_TIME                 = std::chrono::milliseconds(1);           /** The amount of time for a target to be in frame for activation. */ 
-const auto ACTIVE_LATCH                 = std::chrono::milliseconds(250);           /** The amount of time to latch the output control pin during detection event. */
 const int WIRING_PI_PIN_RF_POWER        = 0;                                        /** Raspberry Pi 5 Wiring PI GPIO Pin. */
 const std::string DATASET_PROTOTXT      = "/home/nlao/pi-dogdoor/dataset/MobileNetSSD_deploy.prototxt";   /** Dataset Proto Txt Model */
 const std::string DATASET_CAFFEMODEL    = "/home/nlao/pi-dogdoor/dataset/MobileNetSSD_deploy.caffemodel"; /** Dataset Caffe Model */
@@ -104,9 +102,60 @@ private:
     const cv::RotateFlags rotation;
 };
 
-int main()
+int main(int argc, char** argv)
 {
-    assert(wiringPiSetup() != -1);
+    if (argc == 1)
+    {
+        std::cout << "Raspberry Pi 5 Image Detection Dog Door Service Driver" << std::endl;
+        std::cout << "Command line arguments:" << std::endl;
+        std::cout << "\t-<DELAY_TIME>: Delay period (milliseconds) between camera image captures." << std::endl;
+        std::cout << "\t-<TRIGGER_TIME>: The minimum amount of time (milliseconds) for a dog to be in frame of the image for door activation." << std::endl;
+        std::cout << "\t-<ACTIVE_LATCH>: The amount of time (milliseconds) to latch the output activation pin during a detection (opening) event." << std::endl;
+        return 0;
+    }
+
+    if (argc != 4)
+    {
+        perror("Error: Invalid number of command line arguments. Expecting 3: <DELAY_PERIOD> <TRIGGER_TIME> <ACTIVE_LATCH>");
+        return 1; 
+    }
+    
+    char* endptr;
+    long int value;
+
+    /* CLI Argument: DELAY_PERIOD */
+    value = strtol(argv[1], &endptr, 10);
+    if (*endptr != '\0')
+    {
+        perror("Error: Invalid command line argument 1: <DELAY_PERIOD>");
+        return 1;
+    }
+    const auto DELAY_PERIOD = std::chrono::milliseconds(value);
+
+    /* CLI Argument: TRIGGER_TIME */
+    value = strtol(argv[2], &endptr, 10);
+    if (*endptr != '\0')
+    {
+        perror("Error: Invalid command line argument 1: <TRIGGER_TIME>");
+        return 1;
+    }
+    const auto TRIGGER_TIME = std::chrono::milliseconds(value);
+    
+    /* CLI Argument: ACTIVE_LATCH */
+    value = strtol(argv[3], &endptr, 10);
+    if (*endptr != '\0')
+    {
+        perror("Error: Invalid command line argument 1: <ACTIVE_LATCH>");
+        return 1;
+    }
+    const auto ACTIVE_LATCH = std::chrono::milliseconds(value);
+
+    if (wiringPiSetup() == -1)
+    {
+        perror("Error: wiringPiSetup() failed");
+        return 1;	
+    }
+    pinMode(WIRING_PI_PIN_RF_POWER, OUTPUT);
     digitalWrite(WIRING_PI_PIN_RF_POWER, LOW);
 
     /** Defines the target objects for detection. @note This must correspond to the indices in the datasets. */
@@ -116,34 +165,45 @@ int main()
 
     auto trigger = std::chrono::milliseconds(0);
     auto latch = std::chrono::milliseconds(0);
-    std::cout << "STARTING PI DOG DOOR" << std::endl;
+    std::cout
+        << "Starting Pi Dog Door Driver: " 
+        << "DELAY_PERIOD=" << DELAY_PERIOD.count() << " milliseconds"
+        << "TRIGGER_TIME=" << TRIGGER_TIME.count() << " milliseconds"
+        << "ACTIVE_LATCH=" << ACTIVE_LATCH.count() << " milliseconds" << std::endl;
     while (true)
     {
-	    std::cout << "CAPTURING: " << "trigger=" << trigger.count() << " " << "latch=" << latch.count() << std::endl;
+        if ((trigger > std::chrono::milliseconds(0)) || (latch > std::chrono::milliseconds(0)))
+	    {
+            std::cout
+                << "Capturing: "
+                << "trigger=" << trigger.count() << " "
+                << "latch="   << latch.count()   << std::endl;
+        }
+
         if (latch > std::chrono::milliseconds(0))
         {
-            latch = latch - FRAME_DELAY;
+            latch = latch - DELAY_PERIOD;
             if (latch <= std::chrono::milliseconds(0))
             {
-                std::cout << "CLOSING" << std::endl;
+                std::cout << "Closing" << std::endl;
                 digitalWrite(WIRING_PI_PIN_RF_POWER, LOW);
-		latch = std::chrono::milliseconds(0);
+	            latch = std::chrono::milliseconds(0);
             }
-	}
-	else if (trigger < TRIGGER_TIME)
-	{
+	    }
+	    else if (trigger < TRIGGER_TIME)
+	    {
             trigger = (camera_a.detect(TARGET_OBJECT_LABELS) || camera_b.detect(TARGET_OBJECT_LABELS))
-                ? trigger + FRAME_DELAY
-		: std::chrono::milliseconds(0);
+                ? trigger + DELAY_PERIOD
+		        : std::chrono::milliseconds(0);
         }
-	else
-	{
-	    std::cout << "OPENING" << std::endl;
-	    digitalWrite(WIRING_PI_PIN_RF_POWER, HIGH);
-	    trigger = std::chrono::milliseconds(0);
-	    latch = ACTIVE_LATCH;
-	}
-        std::this_thread::sleep_for(FRAME_DELAY);
+	    else
+	    {
+	        std::cout << "Opening" << std::endl;
+	        digitalWrite(WIRING_PI_PIN_RF_POWER, HIGH);
+	        trigger = std::chrono::milliseconds(0);
+	        latch = ACTIVE_LATCH;
+	    }
+        std::this_thread::sleep_for(DELAY_PERIOD);
     }
 
     return 0;

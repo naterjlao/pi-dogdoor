@@ -1,0 +1,15 @@
+[Unit]
+Description=Pi Dog Door Driver
+After=network.target
+
+[Service]
+Type=simple
+User=nlao
+WorkingDirectory=/home/nlao/pi-dogdoor
+ExecStart=/home/nlao/pi-dogdoor/build/pi-dogdoor-driver 25 100 500
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
